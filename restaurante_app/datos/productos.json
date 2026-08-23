@@ -1,0 +1,9 @@
+[
+    {
+        "codigo": "01",
+        "nombre": "Sopa",
+        "categoria": "Comida",
+        "precio": 3.5,
+        "disponible": true
+    }
+]

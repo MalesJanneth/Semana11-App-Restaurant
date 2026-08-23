@@ -4,6 +4,7 @@ La clase Usuario representa de manera general
 a una persona registrada en el sistema.
 """
 
+
 class Usuario:
     """
     Representa un usuario registrado en el restaurante.
@@ -32,6 +33,7 @@ class Usuario:
         nueva_identificacion: str,
     ) -> None:
         """Establece y valida la identificación."""
+
         if not nueva_identificacion.strip():
             raise ValueError(
                 "La identificación no puede estar vacía."
@@ -47,6 +49,7 @@ class Usuario:
     @nombre.setter
     def nombre(self, nuevo_nombre: str) -> None:
         """Establece y valida el nombre."""
+
         if not nuevo_nombre.strip():
             raise ValueError(
                 "El nombre no puede estar vacío."
@@ -57,6 +60,7 @@ class Usuario:
     @property
     def correo(self) -> str:
         """Devuelve el correo del usuario."""
+
         if not self._correo.strip():
             raise ValueError(
                 "El correo no puede estar vacío."
@@ -65,8 +69,12 @@ class Usuario:
         return self._correo
 
     @correo.setter
-    def correo(self, nuevo_correo: str) -> None:
+    def correo(
+        self,
+        nuevo_correo: str,
+    ) -> None:
         """Establece y valida el correo."""
+
         if not nuevo_correo.strip():
             raise ValueError(
                 "El correo no puede estar vacío."

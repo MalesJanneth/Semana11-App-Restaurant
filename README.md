@@ -1,52 +1,502 @@
-# Aplicación de Restaurante
+# Restaurante App - Semana 10
 
-**Estudiante:** Masculino Conejo Janneth Talía
+## Manejo de archivos, excepciones y persistencia JSON
 
-**Asignatura:** Programación Orientada a Objetos  
-**Semana:** 9
+**Estudiante:** Jannneth Talía Males Conejo
+---
 
-## Descripción
+## 1. Descripción del sistema
 
-Restaurante App es una aplicación desarrollada en Python utilizando Programación Orientada a Objetos (POO). El proyecto representa la administración básica de un restaurante mediante una aplicación de consola.
+`restaurante_app` es un sistema de consola desarrollado en Python para administrar productos y usuarios de un restaurante.
 
-El sistema permite administrar productos, usuarios y categorías de productos.
+Este proyecto corresponde a la evolución del trabajo realizado durante las semanas anteriores. Para la Semana 10 se incorporó la **persistencia de productos mediante un archivo JSON**, además del manejo de excepciones relacionadas con la lectura, escritura y validación de los datos almacenados.
 
-Las principales operaciones sobre productos son:
+El sistema permite:
+
+- Registrar productos.
+- Buscar productos por código.
+- Actualizar productos.
+- Eliminar productos.
+- Listar productos.
+- Mostrar categorías.
+- Registrar usuarios.
+- Listar usuarios.
+- Guardar productos en un archivo JSON.
+- Cargar automáticamente los productos al iniciar la aplicación.
+- Reconstruir los registros almacenados como objetos `Producto`.
+
+La persistencia se aplica únicamente a los productos, de acuerdo con los requerimientos de la Semana 10.
+
+---
+
+## 2. Objetivo de la Semana 10
+
+El objetivo principal de esta semana es incorporar persistencia de datos al proyecto `restaurante_app`, permitiendo que los productos registrados permanezcan disponibles aunque la aplicación sea cerrada.
+
+Para esto se implementó:
+
+- Manejo de archivos.
+- Persistencia mediante JSON.
+- Uso de `json.dump()`.
+- Uso de `json.load()`.
+- Uso de `with open()`.
+- Codificación `UTF-8`.
+- Reconstrucción de objetos `Producto`.
+- Validación de los datos recuperados.
+- Manejo específico de excepciones.
+
+---
+
+## 3. Estructura del proyecto
+
+```text
+restaurante_app/
+├── datos/
+│   └── productos.json
+├── modelos/
+│   ├── __init__.py
+│   ├── producto.py
+│   └── usuario.py
+├── servicios/
+│   ├── __init__.py
+│   ├── archivo_servicio.py
+│   └── restaurante.py
+└── main.py
+
+README.md
+```
+
+---
+
+## 4. Responsabilidad de los componentes
+
+### 4.1. `modelos/producto.py`
+
+Contiene la clase `Producto`, que representa cada producto del restaurante.
+
+La clase conserva las validaciones desarrolladas durante las semanas anteriores:
+
+- El código no puede estar vacío.
+- El nombre no puede estar vacío.
+- La categoría no puede estar vacía.
+- El precio debe ser mayor que cero.
+- Se controla la disponibilidad del producto.
+
+Además, la clase dispone del método:
+
+```python
+a_diccionario()
+```
+
+Este método permite convertir un objeto `Producto` en un diccionario compatible con JSON.
+
+Los productos continúan siendo objetos de la clase `Producto` durante la ejecución del programa.
+
+---
+
+### 4.2. `modelos/usuario.py`
+
+Contiene la clase `Usuario`.
+
+Esta clase conserva las funcionalidades desarrolladas anteriormente para representar usuarios registrados en el sistema.
+
+La información de los usuarios permanece únicamente en memoria durante la ejecución.
+
+En esta semana no se implementó persistencia para usuarios, ya que la actividad solicita aplicar la persistencia únicamente a los productos.
+
+---
+
+### 4.3. `servicios/restaurante.py`
+
+Contiene la clase `Restaurante`.
+
+Es el servicio encargado de administrar las colecciones y las operaciones relacionadas con productos y usuarios.
+
+Sus principales responsabilidades son:
 
 - Registrar productos.
 - Buscar productos.
 - Actualizar productos.
 - Eliminar productos.
 - Listar productos.
-
-También permite:
-
 - Registrar usuarios.
 - Listar usuarios.
-- Mostrar las categorías únicas de los productos.
+- Obtener categorías.
+- Evitar códigos de productos duplicados.
+- Evitar identificaciones de usuarios duplicadas.
 
-La aplicación mantiene una arquitectura modular separando los modelos, el servicio encargado de administrar las colecciones y el punto de entrada del programa.
+La colección de productos permanece administrada dentro de `Restaurante`.
 
-## Estructura del proyecto
+`main.py` no modifica directamente las colecciones internas del servicio.
 
-    restaurante_app/
-    ├── modelos/
-    │   ├── __init__.py
-    │   ├── producto.py
-    │   └── usuario.py
-    ├── servicios/
-    │   ├── __init__.py
-    │   └── restaurante.py
-    ├── main.py
-    └── README.md
+---
 
-## Responsabilidad de los componentes
+### 4.4. `servicios/archivo_servicio.py`
 
-### modelos/producto.py
+Contiene la clase `ArchivoServicio`.
 
-Contiene la clase Producto, que representa un producto del restaurante.
+Este servicio concentra exclusivamente las operaciones de lectura y escritura del archivo:
 
-Maneja información como:
+```text
+datos/productos.json
+```
+
+Utiliza:
+
+- `json.load()` para cargar los productos.
+- `json.dump()` para guardar los productos.
+- `with open()` para trabajar con el archivo.
+- `encoding="utf-8"` para la codificación de los datos.
+
+También controla las excepciones relacionadas con:
+
+- Archivos inexistentes.
+- Archivos JSON inválidos.
+- Permisos insuficientes.
+- Registros incompletos.
+- Datos inválidos.
+- Tipos de datos incorrectos.
+
+---
+
+### 4.5. `datos/productos.json`
+
+Es el archivo utilizado para almacenar de manera persistente los productos registrados.
+
+La carpeta `datos/` se utiliza únicamente como ubicación del archivo JSON y **no representa una nueva capa de la arquitectura del sistema**.
+
+Los productos se almacenan en forma de una lista de diccionarios compatible con JSON.
+
+Ejemplo:
+
+```json
+[
+    {
+        "codigo": "01",
+        "nombre": "Sopa",
+        "categoria": "Comida",
+        "precio": 2.5,
+        "disponible": true
+    }
+]
+```
+
+Aunque la información se almacena como diccionarios dentro del archivo, durante la ejecución los registros son reconstruidos nuevamente como objetos `Producto`.
+
+---
+
+### 4.6. `main.py`
+
+Es el punto de entrada de la aplicación.
+
+Sus responsabilidades principales son:
+
+- Crear el servicio `Restaurante`.
+- Crear el servicio `ArchivoServicio`.
+- Cargar los productos almacenados al iniciar.
+- Coordinar el menú.
+- Solicitar los datos mediante `input()`.
+- Ejecutar las operaciones solicitadas por el usuario.
+- Solicitar el guardado después de registrar un producto.
+- Solicitar el guardado después de actualizar un producto.
+- Solicitar el guardado después de eliminar un producto.
+
+`main.py` coordina el flujo de la aplicación, pero no administra directamente las colecciones internas de `Restaurante`.
+
+---
+
+## 5. Persistencia de productos
+
+La persistencia permite conservar los productos registrados aunque el programa sea cerrado.
+
+El archivo utilizado para esta finalidad es:
+
+```text
+datos/productos.json
+```
+
+La persistencia se realiza únicamente para la entidad `Producto`.
+
+---
+
+## 6. Guardado de productos
+
+Cuando el usuario registra correctamente un producto, se sigue el siguiente flujo:
+
+```text
+Usuario
+   ↓
+main.py
+   ↓
+Restaurante
+   ↓
+Objeto Producto
+   ↓
+ArchivoServicio
+   ↓
+Producto convertido a diccionario
+   ↓
+json.dump()
+   ↓
+datos/productos.json
+```
+
+Los objetos `Producto` se convierten a diccionarios mediante el método:
+
+```python
+a_diccionario()
+```
+
+Posteriormente, `ArchivoServicio` utiliza `json.dump()` para escribir la información en el archivo JSON.
+
+El archivo se actualiza después de realizar correctamente las siguientes operaciones:
+
+1. Registrar un producto.
+2. Actualizar un producto.
+3. Eliminar un producto.
+
+---
+
+## 7. Carga de productos
+
+Cuando se inicia nuevamente la aplicación, se ejecuta el siguiente flujo:
+
+```text
+Inicio de la aplicación
+        ↓
+main.py crea ArchivoServicio
+        ↓
+Se intenta leer datos/productos.json
+        ↓
+json.load()
+        ↓
+Se valida la información recuperada
+        ↓
+Se revisa cada registro
+        ↓
+Se crea Producto(...)
+        ↓
+Se reconstruyen objetos Producto
+        ↓
+Los objetos se entregan a Restaurante
+        ↓
+El menú continúa funcionando normalmente
+```
+
+Cada registro válido recuperado desde JSON se convierte nuevamente en un objeto de la clase `Producto`.
+
+Por lo tanto, el sistema no reemplaza la clase `Producto` por diccionarios.
+
+Durante la ejecución, las operaciones continúan trabajando con objetos.
+
+---
+
+## 8. Estructura de los datos JSON
+
+El archivo `productos.json` utiliza una lista de diccionarios.
+
+Ejemplo:
+
+```json
+[
+    {
+        "codigo": "01",
+        "nombre": "Sopa",
+        "categoria": "Comida",
+        "precio": 2.5,
+        "disponible": true
+    },
+    {
+        "codigo": "02",
+        "nombre": "Jugo",
+        "categoria": "Bebida",
+        "precio": 1.5,
+        "disponible": true
+    }
+]
+```
+
+Cada producto contiene las siguientes propiedades:
+
+| Propiedad | Tipo | Descripción |
+|---|---|---|
+| `codigo` | `str` | Código identificador del producto |
+| `nombre` | `str` | Nombre del producto |
+| `categoria` | `str` | Categoría del producto |
+| `precio` | `float` | Precio del producto |
+| `disponible` | `bool` | Estado de disponibilidad |
+
+---
+
+## 9. Manejo de excepciones
+
+El programa utiliza excepciones específicas para evitar que situaciones esperadas provoquen el cierre abrupto de la aplicación.
+
+---
+
+### 9.1. `FileNotFoundError`
+
+Se controla cuando el archivo:
+
+```text
+datos/productos.json
+```
+
+todavía no existe.
+
+En este caso, el programa inicia normalmente con una colección de productos vacía.
+
+Esto permite realizar el primer inicio de la aplicación sin tener que crear manualmente información previa.
+
+---
+
+### 9.2. `json.JSONDecodeError`
+
+Se controla cuando el archivo existe, pero su contenido no corresponde a un JSON válido.
+
+El programa muestra un mensaje indicando que el archivo no tiene un formato JSON válido y continúa funcionando sin detener toda la aplicación.
+
+---
+
+### 9.3. `PermissionError`
+
+Se controla cuando el sistema no dispone de permisos suficientes para leer o escribir el archivo `productos.json`.
+
+Se muestra un mensaje comprensible indicando el problema.
+
+---
+
+### 9.4. `KeyError`
+
+Se controla durante la reconstrucción de los objetos `Producto`.
+
+Si un registro almacenado no contiene alguna de las claves esperadas, el registro se considera incompleto y se omite.
+
+Por ejemplo, un registro que no contenga:
+
+```text
+codigo
+nombre
+categoria
+precio
+disponible
+```
+
+no se incorpora a la colección.
+
+Los demás registros válidos pueden continuar cargándose.
+
+---
+
+### 9.5. `ValueError`
+
+Se utiliza para las validaciones propias de la clase `Producto`.
+
+Por ejemplo:
+
+- Código vacío.
+- Nombre vacío.
+- Categoría vacía.
+- Precio menor o igual a cero.
+
+Cuando se detecta un valor inválido, se muestra un mensaje de error y se evita que el problema detenga innecesariamente la aplicación.
+
+---
+
+### 9.6. `TypeError`
+
+Se contempla durante la reconstrucción de productos cuando un registro almacenado contiene tipos de datos incompatibles con los esperados.
+
+El registro que presenta el problema puede ser omitido mientras los demás registros válidos continúan procesándose.
+
+---
+
+## 10. Validaciones de la clase `Producto`
+
+La clase `Producto` conserva las validaciones desarrolladas durante las semanas anteriores.
+
+### Código
+
+El código no puede estar vacío.
+
+### Nombre
+
+El nombre no puede estar vacío.
+
+### Categoría
+
+La categoría no puede estar vacía.
+
+### Precio
+
+El precio debe ser mayor que cero.
+
+### Disponibilidad
+
+La disponibilidad se almacena mediante un valor booleano:
+
+```python
+True
+```
+
+o:
+
+```python
+False
+```
+
+Estas validaciones también se aplican cuando los productos son reconstruidos desde el archivo JSON.
+
+---
+
+## 11. Operaciones disponibles
+
+El programa mantiene las funcionalidades desarrolladas anteriormente.
+
+```text
+========================================
+        SISTEMA DE RESTAURANTE
+========================================
+1. Registrar producto
+2. Buscar producto
+3. Actualizar producto
+4. Eliminar producto
+5. Listar productos
+6. Registrar usuario
+7. Listar usuarios
+8. Mostrar categorías
+9. Salir
+========================================
+```
+
+### Registrar producto
+
+Permite ingresar un nuevo producto mediante `input()`.
+
+Los datos solicitados son:
+
+```text
+Código
+Nombre
+Categoría
+Precio
+```
+
+Una vez validado y registrado correctamente, el producto se guarda en `productos.json`.
+
+---
+
+### Buscar producto
+
+Permite buscar un producto mediante su código.
+
+El sistema devuelve la información del producto encontrado.
+
+---
+
+### Actualizar producto
+
+Permite modificar:
 
 - Código.
 - Nombre.
@@ -54,175 +504,424 @@ Maneja información como:
 - Precio.
 - Disponibilidad.
 
-### modelos/usuario.py
+Después de una actualización correcta, el archivo JSON se actualiza.
 
-Contiene la clase Usuario, que representa a una persona registrada en el sistema.
+---
 
-Maneja información como:
+### Eliminar producto
 
-- Identificación.
-- Nombre.
-- Correo electrónico.
+Permite eliminar un producto mediante su código.
 
-### servicios/restaurante.py
+La operación solicita confirmación al usuario.
 
-Contiene la clase Restaurante, encargada de administrar las colecciones de productos y usuarios.
+Después de eliminar correctamente el producto, se actualiza el archivo JSON.
 
-Sus principales responsabilidades son:
+---
 
-- Registrar productos.
-- Buscar productos.
-- Actualizar productos.
-- Eliminar productos.
-- Listar productos.
-- Registrar usuarios.
-- Listar usuarios.
-- Evitar códigos de productos duplicados.
-- Evitar identificaciones de usuarios duplicadas.
-- Obtener las categorías únicas de los productos.
+### Listar productos
 
-### main.py
+Muestra todos los productos registrados actualmente en el sistema.
 
-Es el punto de entrada del programa y se encarga de la interacción con el usuario mediante un menú de consola.
+Los productos cargados desde JSON aparecen nuevamente como objetos `Producto`.
 
-Sus principales responsabilidades son:
+---
 
-- Mostrar el menú principal.
-- Solicitar información mediante input().
-- Crear objetos Producto y Usuario.
-- Utilizar los métodos de Restaurante.
-- Mostrar los resultados al usuario.
-- Controlar las opciones del menú.
-- Manejar entradas incorrectas.
+### Registrar usuario
 
-### README.md
+Permite registrar usuarios durante la ejecución de la aplicación.
 
-Contiene la documentación del proyecto, su estructura, funcionamiento y explicación de las estructuras de datos utilizadas.
+Los usuarios no se almacenan en el archivo JSON porque la persistencia de esta semana corresponde únicamente a los productos.
 
-## Estructuras de datos utilizadas
+---
 
-### Lista (list)
+### Listar usuarios
 
-Las listas se utilizan en la clase Restaurante para almacenar los productos y usuarios registrados.
+Muestra los usuarios registrados durante la ejecución actual.
 
-Se utilizan principalmente:
+---
 
-- Una lista de productos.
-- Una lista de usuarios.
+### Mostrar categorías
 
-Las listas son adecuadas porque estas colecciones pueden aumentar o disminuir durante la ejecución del programa.
+Muestra las categorías únicas de los productos registrados.
 
-También permiten realizar las operaciones de registro, búsqueda, actualización, eliminación y listado de productos.
+---
 
-### Tupla (tuple)
+## 12. Instrucciones para ejecutar el programa
 
-En main.py se utiliza la tupla OPCIONES_MENU para almacenar las opciones principales del menú.
+### Paso 1: Abrir una terminal
 
-La tupla es adecuada porque las opciones del menú permanecen estables durante la ejecución del programa y no necesitan modificarse.
+Ubicarse en la carpeta principal donde se encuentra el proyecto.
 
-### Diccionario (dict)
+Ejemplo:
 
-En main.py se utiliza un diccionario mediante la función obtener_acciones_menu().
+```powershell
+cd "C:\Users\TALIA MALES\Desktop\Semana10_POO"
+```
 
-Este diccionario relaciona cada número del menú con el nombre de la operación correspondiente.
+### Paso 2: Ejecutar el programa
+
+Utilizar:
+
+```powershell
+python restaurante_app/main.py
+```
+
+También puede utilizarse:
+
+```powershell
+py restaurante_app/main.py
+```
+
+### Paso 3: Utilizar el menú
+
+Después de ejecutar el programa aparecerá el menú principal.
 
 Por ejemplo:
 
-    "1" → "registrar_producto"
-    "2" → "buscar_producto"
-    "3" → "actualizar_producto"
+```text
+Seleccione una opción: 1
+```
 
-De esta manera se establece una relación clara de clave → valor para organizar las acciones disponibles en el menú.
+Para registrar un producto se ingresan los datos solicitados.
 
-### Conjunto (set)
+---
 
-Se utiliza un conjunto en Restaurante para obtener las categorías de los productos sin elementos repetidos.
+## 13. Comprobación de la persistencia
 
-Por ejemplo, si existen varios productos de la categoría Bebidas, esta categoría solamente se muestra una vez.
+Se realizó una prueba para comprobar que los productos permanecen disponibles después de cerrar y volver a iniciar la aplicación.
 
-El conjunto permite obtener y mostrar únicamente las categorías únicas registradas en el sistema.
+### Prueba 1: Inicio sin archivo
 
-## Funcionalidades
+Se ejecutó:
 
-El sistema cuenta con las siguientes opciones:
+```powershell
+python restaurante_app/main.py
+```
 
-1. Registrar producto.
-2. Buscar producto.
-3. Actualizar producto.
-4. Eliminar producto.
-5. Listar productos.
-6. Registrar usuario.
-7. Listar usuarios.
-8. Mostrar categorías.
-9. Salir.
+Como el archivo todavía no existía, el sistema inició normalmente y mostró un mensaje indicando que se trabajaría con una colección vacía.
 
-### Productos
+Esto permitió comprobar el manejo de:
 
-El sistema permite registrar productos ingresando su código, nombre, categoría, precio y disponibilidad.
+```python
+FileNotFoundError
+```
 
-También permite buscar un producto mediante su código, actualizar sus datos, eliminarlo y mostrar todos los productos registrados.
+---
 
-El sistema controla que no existan códigos de productos duplicados.
+### Prueba 2: Registrar un producto
 
-### Usuarios
+Se seleccionó:
 
-El sistema permite registrar usuarios ingresando su identificación, nombre y correo electrónico.
+```text
+1. Registrar producto
+```
 
-También permite listar los usuarios registrados.
+Se ingresaron los siguientes datos:
 
-El sistema controla que no existan identificaciones de usuarios duplicadas.
+```text
+Código: 01
+Nombre: Sopa
+Categoría: Comida
+Precio: 2.5
+```
 
-### Categorías
+El sistema mostró:
 
-El sistema permite mostrar las categorías de los productos sin elementos duplicados mediante el uso de un conjunto (set).
+```text
+El producto "Sopa" fue registrado correctamente.
+```
 
-## Validaciones
+---
 
-El sistema realiza diferentes validaciones para mantener la información correcta.
+### Prueba 3: Verificar `productos.json`
 
-Entre ellas:
+Después del registro se comprobó que se generara:
 
-- Evitar códigos de productos duplicados.
-- Evitar identificaciones de usuarios duplicadas.
-- Validar el ingreso del precio.
-- Evitar códigos vacíos.
-- Controlar opciones incorrectas del menú.
-- Verificar que un producto exista antes de actualizarlo o eliminarlo.
-- Manejar errores mediante excepciones cuando corresponde.
+```text
+datos/productos.json
+```
 
-## Instrucciones para ejecutar el programa
+El archivo almacenó la información del producto en formato JSON.
 
-### Requisitos
+---
 
-Para ejecutar el proyecto se necesita:
+### Prueba 4: Cerrar la aplicación
 
-- Python 3.
-- Visual Studio Code u otro editor compatible con Python.
-- Terminal o consola.
+Se seleccionó:
 
-## Separación de responsabilidades
+```text
+9. Salir
+```
 
-El proyecto mantiene una separación entre los diferentes componentes:
+La aplicación se cerró completamente.
 
-- modelos/ contiene las clases Producto y Usuario.
-- servicios/ contiene la clase Restaurante, encargada de administrar las colecciones y operaciones.
-- main.py se encarga de la interacción con el usuario.
-- README.md contiene la documentación del proyecto.
+---
 
-La administración de las colecciones se mantiene dentro de Restaurante.
+### Prueba 5: Ejecutar nuevamente
 
-De esta manera, main.py no modifica directamente las listas internas del servicio, sino que utiliza los métodos proporcionados por la clase Restaurante.
+Se volvió a ejecutar:
 
-## Reflexión
+```powershell
+python restaurante_app/main.py
+```
 
-Seleccionar correctamente una estructura de datos es importante porque cada estructura está diseñada para resolver diferentes necesidades.
+---
 
-En este proyecto, las listas permiten almacenar colecciones dinámicas de productos y usuarios.
+### Prueba 6: Listar los productos
 
-Las tuplas permiten mantener información estable, como las opciones del menú.
+Se seleccionó:
 
-Los diccionarios permiten relacionar una clave con un valor y organizar las acciones del menú.
+```text
+5. Listar productos
+```
 
-Los conjuntos permiten trabajar con información única, como las categorías de los productos.
+El producto registrado anteriormente volvió a aparecer.
 
-Elegir la estructura adecuada permite que el programa sea más organizado, fácil de comprender, mantener y ampliar en el futuro.
+Esto permitió comprobar que la información no dependía únicamente de la memoria temporal del programa.
+
+---
+
+### Prueba 7: Actualizar un producto
+
+Se seleccionó:
+
+```text
+3. Actualizar producto
+```
+
+Se modificó la información de un producto.
+
+Después de la actualización, el archivo:
+
+```text
+datos/productos.json
+```
+
+fue actualizado.
+
+---
+
+### Prueba 8: Reiniciar después de actualizar
+
+Se cerró y volvió a ejecutar la aplicación.
+
+Posteriormente se listaron nuevamente los productos y se comprobó que la información actualizada permanecía almacenada.
+
+---
+
+### Prueba 9: Eliminar un producto
+
+Se seleccionó:
+
+```text
+4. Eliminar producto
+```
+
+Después de confirmar la eliminación, el archivo JSON fue actualizado.
+
+Al reiniciar la aplicación se comprobó que el producto eliminado ya no aparecía.
+
+---
+
+## 14. Resultado de las pruebas
+
+| Prueba | Resultado |
+|---|---|
+| Inicio sin `productos.json` | Correcto |
+| Registro de producto | Correcto |
+| Creación/actualización de `productos.json` | Correcto |
+| Cierre de la aplicación | Correcto |
+| Reinicio de la aplicación | Correcto |
+| Recuperación de productos | Correcto |
+| Búsqueda de productos | Correcto |
+| Actualización de productos | Correcto |
+| Persistencia de actualización | Correcto |
+| Eliminación de productos | Correcto |
+| Persistencia de eliminación | Correcto |
+| Manejo de archivo inexistente | Correcto |
+| Reconstrucción como objetos `Producto` | Correcto |
+
+---
+
+## 15. Flujo general del sistema
+
+```text
+                         INICIO
+                           │
+                           ▼
+                 Crear Restaurante
+                           │
+                           ▼
+                Crear ArchivoServicio
+                           │
+                           ▼
+                Cargar productos.json
+                           │
+                  ┌────────┴────────┐
+                  │                 │
+                  ▼                 ▼
+          Archivo encontrado   Archivo no encontrado
+                  │                 │
+                  ▼                 ▼
+              json.load()    Colección vacía
+                  │
+                  ▼
+         Validar estructura JSON
+                  │
+                  ▼
+         Validar cada registro
+                  │
+                  ▼
+          Crear objetos Producto
+                  │
+                  ▼
+        Registrar en Restaurante
+                  │
+                  ▼
+              Mostrar menú
+                  │
+                  ▼
+        Operación seleccionada
+                  │
+        ┌─────────┼─────────┐
+        │         │         │
+        ▼         ▼         ▼
+    Registrar  Actualizar  Eliminar
+        │         │         │
+        └─────────┼─────────┘
+                  │
+                  ▼
+       ArchivoServicio guarda
+                  │
+                  ▼
+             json.dump()
+                  │
+                  ▼
+        productos.json actualizado
+```
+
+---
+
+## 16. Separación de responsabilidades
+
+El proyecto mantiene una arquitectura modular.
+
+| Componente | Responsabilidad |
+|---|---|
+| `Producto` | Representar productos y validar sus datos |
+| `Usuario` | Representar usuarios y validar sus datos |
+| `Restaurante` | Administrar las colecciones y operaciones |
+| `ArchivoServicio` | Leer y guardar productos en JSON |
+| `main.py` | Coordinar el menú y la interacción con el usuario |
+| `productos.json` | Almacenar persistentemente los productos |
+
+La carpeta:
+
+```text
+datos/
+```
+
+se utiliza únicamente como ubicación del archivo JSON y no constituye una nueva capa de la arquitectura.
+
+---
+
+## 17. Tecnologías utilizadas
+
+- **Python 3**
+- **Programación Orientada a Objetos**
+- **Módulo `json`**
+- **Manejo de archivos**
+- **Excepciones de Python**
+- **Persistencia mediante JSON**
+- **Anotaciones de tipos**
+- **Estructuras de datos de Python**
+
+No se utilizaron:
+
+- Bases de datos.
+- Interfaces gráficas.
+- Frameworks.
+- Persistencia de usuarios.
+- Funcionalidades correspondientes a semanas posteriores.
+
+---
+
+## 18. Mejoras incorporadas en la Semana 10
+
+En comparación con la versión anterior del proyecto, se incorporaron las siguientes mejoras:
+
+- Se creó la carpeta `datos/`.
+- Se incorporó `datos/productos.json`.
+- Se creó `servicios/archivo_servicio.py`.
+- Se implementó la persistencia de productos.
+- Se implementó `json.dump()`.
+- Se implementó `json.load()`.
+- Se utilizó `with open()`.
+- Se utilizó codificación `UTF-8`.
+- Se implementó la carga automática de productos.
+- Se reconstruyeron los registros JSON como objetos `Producto`.
+- Se mantuvieron las validaciones de `Producto`.
+- Se actualiza el JSON después de registrar productos.
+- Se actualiza el JSON después de actualizar productos.
+- Se actualiza el JSON después de eliminar productos.
+- Se implementó el manejo de `FileNotFoundError`.
+- Se implementó el manejo de `json.JSONDecodeError`.
+- Se implementó el manejo de `PermissionError`.
+- Se implementó el manejo de `KeyError`.
+- Se mantuvo el manejo de `ValueError`.
+- Se contempló `TypeError` para datos incompatibles.
+- Se mantuvo la administración de productos dentro de `Restaurante`.
+- Se mantuvo la interacción mediante consola en `main.py`.
+- Se conservaron las funcionalidades desarrolladas en semanas anteriores.
+
+---
+
+## 19. Consideraciones sobre el archivo JSON
+
+El archivo `productos.json` funciona como medio de persistencia.
+
+No reemplaza a la clase `Producto`.
+
+El funcionamiento del sistema sigue siendo orientado a objetos:
+
+```text
+JSON
+ ↓
+Diccionario
+ ↓
+Producto
+ ↓
+Restaurante
+ ↓
+Operaciones del sistema
+```
+
+De esta manera, los datos almacenados externamente vuelven a convertirse en objetos del dominio cuando la aplicación inicia.
+
+---
+
+## 20. Conclusión
+
+La implementación realizada en la Semana 10 permite que el sistema `restaurante_app` conserve los productos registrados entre diferentes ejecuciones de la aplicación.
+
+La incorporación del archivo:
+
+```text
+datos/productos.json
+```
+
+permite almacenar los productos de manera persistente utilizando una estructura compatible con JSON.
+
+El proyecto mantiene la separación de responsabilidades:
+
+- `Producto` representa y valida los productos.
+- `Usuario` representa y valida los usuarios.
+- `Restaurante` administra las colecciones y operaciones.
+- `ArchivoServicio` administra exclusivamente la lectura y escritura del archivo JSON.
+- `main.py` coordina la interacción con el usuario y el flujo de carga y guardado.
+
+Además, se incorporó el manejo específico de excepciones para situaciones como archivos inexistentes, JSON inválido, permisos insuficientes, registros incompletos y datos inválidos.
+
+La prueba de cierre y reinicio de la aplicación permitió comprobar que los productos registrados permanecen disponibles posteriormente y que las modificaciones y eliminaciones también se conservan correctamente.
+
+Por lo tanto, el proyecto mantiene las funcionalidades desarrolladas anteriormente y agrega una persistencia funcional de productos mediante JSON, cumpliendo con los requerimientos establecidos para la Semana 10.

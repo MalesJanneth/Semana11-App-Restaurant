@@ -1,8 +1,9 @@
 """
-Este módulo contiene la clase Producto. 
+Este módulo contiene la clase Producto.
 La clase Producto representa la información general
 de un producto registrado en el restaurante.
 """
+
 
 class Producto:
     """
@@ -33,6 +34,7 @@ class Producto:
     @codigo.setter
     def codigo(self, nuevo_codigo: str) -> None:
         """Establece y valida el código del producto."""
+
         if not nuevo_codigo.strip():
             raise ValueError(
                 "El código no puede estar vacío."
@@ -48,6 +50,7 @@ class Producto:
     @nombre.setter
     def nombre(self, nuevo_nombre: str) -> None:
         """Establece y valida el nombre del producto."""
+
         if not nuevo_nombre.strip():
             raise ValueError(
                 "El nombre no puede estar vacío."
@@ -61,8 +64,12 @@ class Producto:
         return self._categoria
 
     @categoria.setter
-    def categoria(self, nueva_categoria: str) -> None:
+    def categoria(
+        self,
+        nueva_categoria: str,
+    ) -> None:
         """Establece y valida la categoría del producto."""
+
         if not nueva_categoria.strip():
             raise ValueError(
                 "La categoría no puede estar vacía."
@@ -78,6 +85,7 @@ class Producto:
     @precio.setter
     def precio(self, nuevo_precio: float) -> None:
         """Establece y valida el precio del producto."""
+
         if nuevo_precio <= 0:
             raise ValueError(
                 "El precio debe ser mayor que cero."
@@ -114,3 +122,17 @@ class Producto:
             f"Precio: ${self.precio:.2f} | "
             f"Estado: {estado}"
         )
+
+    def a_diccionario(self) -> dict[str, object]:
+        """
+        Convierte el objeto Producto en un diccionario
+        compatible con formato JSON.
+        """
+
+        return {
+            "codigo": self.codigo,
+            "nombre": self.nombre,
+            "categoria": self.categoria,
+            "precio": self.precio,
+            "disponible": self.disponible,
+        }

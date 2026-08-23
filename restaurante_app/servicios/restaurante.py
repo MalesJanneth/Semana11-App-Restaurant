@@ -97,6 +97,7 @@ class Restaurante:
                 precio=nuevo_precio,
                 disponible=nueva_disponibilidad,
             )
+
         except ValueError as error:
             return f"Error al actualizar el producto: {error}"
 
@@ -141,6 +142,13 @@ class Restaurante:
             for producto in self._productos
         ]
 
+    def obtener_productos(self) -> list[Producto]:
+        """
+        Devuelve una copia de la colección de productos.
+        """
+
+        return self._productos.copy()
+
     def registrar_usuario(
         self,
         usuario: Usuario,
@@ -178,6 +186,7 @@ class Restaurante:
     def obtener_categorias(self) -> set[str]:
         """
         Devuelve las categorías únicas de los productos.
+
         SET:
         El conjunto elimina automáticamente los valores
         repetidos, permitiendo mostrar cada categoría

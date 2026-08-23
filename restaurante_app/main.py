@@ -5,13 +5,21 @@ mediante un menú de consola y utiliza los métodos
 proporcionados por Restaurante.
 """
 
+from pathlib import Path
+
 from modelos.producto import Producto
 from modelos.usuario import Usuario
+from servicios.archivo_servicio import ArchivoServicio
 from servicios.restaurante import Restaurante
 
-# TUPLA:
-# Representa las opciones estables del menú principal.
-# Las opciones no se modifican durante la ejecución.
+
+RUTA_PRODUCTOS = str(
+    Path(__file__).resolve().parent
+    / "datos"
+    / "productos.json"
+)
+
+
 OPCIONES_MENU: tuple[str, ...] = (
     "1. Registrar producto",
     "2. Buscar producto",
@@ -24,10 +32,9 @@ OPCIONES_MENU: tuple[str, ...] = (
     "9. Salir",
 )
 
+
 def mostrar_menu() -> None:
-    """
-    Muestra el menú principal del sistema.
-    """
+    """Muestra el menú principal del sistema."""
 
     print("\n" + "=" * 40)
     print("        SISTEMA DE RESTAURANTE")
@@ -41,17 +48,20 @@ def mostrar_menu() -> None:
 
 def registrar_producto(
     restaurante: Restaurante,
+    archivo_servicio: ArchivoServicio,
 ) -> None:
-    """
-    Solicita los datos y registra un producto.
-    """
+    """Solicita los datos y registra un producto."""
+
     print("\n--- REGISTRAR PRODUCTO ---")
 
     try:
         codigo = input("Código: ").strip()
         nombre = input("Nombre: ").strip()
         categoria = input("Categoría: ").strip()
-        precio = float(input("Precio: ").strip())
+
+        precio = float(
+            input("Precio: ").strip().replace(",", ".")
+        )
 
         producto = Producto(
             codigo=codigo,
@@ -64,6 +74,11 @@ def registrar_producto(
 
         print(f"\n{resultado}")
 
+        if "correctamente" in resultado:
+            archivo_servicio.guardar_productos(
+                restaurante.obtener_productos()
+            )
+
     except ValueError as error:
         print(f"\nError: {error}")
 
@@ -71,9 +86,7 @@ def registrar_producto(
 def buscar_producto(
     restaurante: Restaurante,
 ) -> None:
-    """
-    Busca un producto mediante su código.
-    """
+    """Busca un producto mediante su código."""
 
     print("\n--- BUSCAR PRODUCTO ---")
 
@@ -100,10 +113,9 @@ def buscar_producto(
 
 def actualizar_producto(
     restaurante: Restaurante,
+    archivo_servicio: ArchivoServicio,
 ) -> None:
-    """
-    Solicita los nuevos datos y actualiza un producto.
-    """
+    """Solicita los nuevos datos y actualiza un producto."""
 
     print("\n--- ACTUALIZAR PRODUCTO ---")
 
@@ -158,7 +170,9 @@ def actualizar_producto(
             nueva_categoria = producto.categoria
 
         if precio_texto:
-            nuevo_precio = float(precio_texto)
+            nuevo_precio = float(
+                precio_texto.replace(",", ".")
+            )
         else:
             nuevo_precio = producto.precio
 
@@ -189,16 +203,20 @@ def actualizar_producto(
 
         print(f"\n{resultado}")
 
+        if "correctamente" in resultado:
+            archivo_servicio.guardar_productos(
+                restaurante.obtener_productos()
+            )
+
     except ValueError as error:
         print(f"\nError: {error}")
 
 
 def eliminar_producto(
     restaurante: Restaurante,
+    archivo_servicio: ArchivoServicio,
 ) -> None:
-    """
-    Elimina un producto mediante su código.
-    """
+    """Elimina un producto mediante su código."""
 
     print("\n--- ELIMINAR PRODUCTO ---")
 
@@ -231,13 +249,16 @@ def eliminar_producto(
 
     print(f"\n{resultado}")
 
+    if "correctamente" in resultado:
+        archivo_servicio.guardar_productos(
+            restaurante.obtener_productos()
+        )
+
 
 def listar_productos(
     restaurante: Restaurante,
 ) -> None:
-    """
-    Muestra todos los productos registrados.
-    """
+    """Muestra todos los productos registrados."""
 
     productos = restaurante.listar_productos()
 
@@ -254,9 +275,7 @@ def listar_productos(
 def registrar_usuario(
     restaurante: Restaurante,
 ) -> None:
-    """
-    Solicita los datos y registra un usuario.
-    """
+    """Solicita los datos y registra un usuario."""
 
     print("\n--- REGISTRAR USUARIO ---")
 
@@ -290,9 +309,7 @@ def registrar_usuario(
 def listar_usuarios(
     restaurante: Restaurante,
 ) -> None:
-    """
-    Muestra todos los usuarios registrados.
-    """
+    """Muestra todos los usuarios registrados."""
 
     usuarios = restaurante.listar_usuarios()
 
@@ -309,11 +326,7 @@ def listar_usuarios(
 def mostrar_categorias(
     restaurante: Restaurante,
 ) -> None:
-    """
-    Muestra las categorías únicas de los productos.
-    Restaurante utiliza un conjunto (set) para eliminar
-    automáticamente las categorías repetidas.
-    """
+    """Muestra las categorías únicas de los productos."""
 
     categorias = restaurante.obtener_categorias()
 
@@ -331,8 +344,6 @@ def obtener_acciones_menu() -> dict[str, str]:
     """
     Devuelve un diccionario que relaciona cada opción
     del menú con el nombre de la operación correspondiente.
-    DICT:
-    Se utiliza una relación clave → valor.
     """
 
     return {
@@ -346,26 +357,34 @@ def obtener_acciones_menu() -> dict[str, str]:
         "8": "mostrar_categorias",
     }
 
+
 def ejecutar_accion(
     accion: str,
     restaurante: Restaurante,
+    archivo_servicio: ArchivoServicio,
 ) -> None:
-    """
-    El diccionario determina qué nombre de operación
-    corresponde a cada opción.
-    """
+    """Ejecuta la operación correspondiente al menú."""
 
     if accion == "registrar_producto":
-        registrar_producto(restaurante)
+        registrar_producto(
+            restaurante,
+            archivo_servicio,
+        )
 
     elif accion == "buscar_producto":
         buscar_producto(restaurante)
 
     elif accion == "actualizar_producto":
-        actualizar_producto(restaurante)
+        actualizar_producto(
+            restaurante,
+            archivo_servicio,
+        )
 
     elif accion == "eliminar_producto":
-        eliminar_producto(restaurante)
+        eliminar_producto(
+            restaurante,
+            archivo_servicio,
+        )
 
     elif accion == "listar_productos":
         listar_productos(restaurante)
@@ -383,11 +402,23 @@ def ejecutar_accion(
 def main() -> None:
     """
     Punto de entrada de la aplicación.
-    main.py coordina la interacción con el usuario
-    y utiliza los métodos del servicio Restaurante.
+
+    Se crean los servicios, se cargan los productos
+    almacenados y posteriormente se ejecuta el menú.
     """
 
     restaurante = Restaurante()
+
+    archivo_servicio = ArchivoServicio(
+        RUTA_PRODUCTOS
+    )
+
+    productos_cargados = (
+        archivo_servicio.cargar_productos()
+    )
+
+    for producto in productos_cargados:
+        restaurante.registrar_producto(producto)
 
     acciones_menu = obtener_acciones_menu()
 
@@ -417,6 +448,7 @@ def main() -> None:
             ejecutar_accion(
                 accion,
                 restaurante,
+                archivo_servicio,
             )
 
         except (ValueError, TypeError) as error:
@@ -427,6 +459,7 @@ def main() -> None:
                 "\n\nPrograma interrumpido por el usuario."
             )
             break
+
 
 if __name__ == "__main__":
     main()
