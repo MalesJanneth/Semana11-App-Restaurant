@@ -1,33 +1,31 @@
 """
 Módulo que contiene la clase Restaurante.
-Restaurante administra las colecciones de productos
-y usuarios.
+
+Restaurante administra las colecciones de productos,
+usuarios y ventas.
 """
 
 from modelos.producto import Producto
 from modelos.usuario import Usuario
+from modelos.venta import Venta
 
 
 class Restaurante:
     """
-    Servicio encargado de administrar productos y usuarios.
-    Las colecciones permanecen dentro de esta clase.
+    Servicio encargado de administrar productos,
+    usuarios y ventas.
     """
 
     def __init__(self) -> None:
-        # LISTAS:
-        # Se utilizan porque productos y usuarios son
-        # colecciones dinámicas de objetos.
         self._productos: list[Producto] = []
         self._usuarios: list[Usuario] = []
+        self._ventas: list[Venta] = []
 
     def registrar_producto(
         self,
         producto: Producto,
     ) -> str:
-        """
-        Registra un producto evitando códigos duplicados.
-        """
+        """Registra un producto evitando códigos duplicados."""
 
         if self._buscar_producto_por_codigo(
             producto.codigo
@@ -48,9 +46,7 @@ class Restaurante:
         self,
         codigo: str,
     ) -> Producto | None:
-        """
-        Busca y devuelve un producto mediante su código.
-        """
+        """Busca un producto mediante su código."""
 
         return self._buscar_producto_por_codigo(codigo)
 
@@ -61,11 +57,12 @@ class Restaurante:
         nuevo_nombre: str,
         nueva_categoria: str,
         nuevo_precio: float,
+        nuevo_stock: int,
         nueva_disponibilidad: bool,
     ) -> str:
         """
         Actualiza la información de un producto.
-        Se verifica que el nuevo código no se repita.
+        Se conserva el stock indicado.
         """
 
         producto_actual = self._buscar_producto_por_codigo(
@@ -95,6 +92,7 @@ class Restaurante:
                 nombre=nuevo_nombre,
                 categoria=nueva_categoria,
                 precio=nuevo_precio,
+                stock=nuevo_stock,
                 disponible=nueva_disponibilidad,
             )
 
@@ -113,9 +111,7 @@ class Restaurante:
         self,
         codigo: str,
     ) -> str:
-        """
-        Elimina un producto mediante su código.
-        """
+        """Elimina un producto mediante su código."""
 
         producto = self._buscar_producto_por_codigo(codigo)
 
@@ -133,9 +129,7 @@ class Restaurante:
         )
 
     def listar_productos(self) -> list[str]:
-        """
-        Devuelve la información de todos los productos.
-        """
+        """Devuelve la información de todos los productos."""
 
         return [
             producto.mostrar_informacion()
@@ -143,9 +137,7 @@ class Restaurante:
         ]
 
     def obtener_productos(self) -> list[Producto]:
-        """
-        Devuelve una copia de la colección de productos.
-        """
+        """Devuelve una copia de la colección de productos."""
 
         return self._productos.copy()
 
@@ -153,10 +145,7 @@ class Restaurante:
         self,
         usuario: Usuario,
     ) -> str:
-        """
-        Registra un usuario evitando identificaciones
-        duplicadas.
-        """
+        """Registra un usuario evitando identificaciones duplicadas."""
 
         if self._buscar_usuario_por_identificacion(
             usuario.identificacion
@@ -174,23 +163,21 @@ class Restaurante:
         )
 
     def listar_usuarios(self) -> list[str]:
-        """
-        Devuelve la información de todos los usuarios.
-        """
+        """Devuelve la información de todos los usuarios."""
 
         return [
             usuario.mostrar_informacion()
             for usuario in self._usuarios
         ]
 
+    def obtener_usuarios(self) -> list[Usuario]:
+        """Devuelve una copia de la colección de usuarios."""
+
+        return self._usuarios.copy()
+
     def obtener_categorias(self) -> set[str]:
         """
         Devuelve las categorías únicas de los productos.
-
-        SET:
-        El conjunto elimina automáticamente los valores
-        repetidos, permitiendo mostrar cada categoría
-        una sola vez.
         """
 
         return {
@@ -198,13 +185,69 @@ class Restaurante:
             for producto in self._productos
         }
 
+    def vender_producto(
+        self,
+        codigo_producto: str,
+        identificacion_usuario: str,
+        cantidad: int,
+    ) -> bool:
+        """
+        Registra una venta si el usuario y producto existen,
+        la cantidad es válida y existe stock suficiente.
+        """
+
+        usuario = self._buscar_usuario_por_identificacion(
+            identificacion_usuario
+        )
+
+        producto = self._buscar_producto_por_codigo(
+            codigo_producto
+        )
+
+        if usuario is None or producto is None:
+            return False
+
+        if cantidad <= 0 or producto.stock < cantidad:
+            return False
+
+        venta = Venta(
+            usuario_id=usuario.identificacion,
+            producto_codigo=producto.codigo,
+            cantidad=cantidad,
+        )
+
+        self._ventas.append(venta)
+        producto.vender(cantidad)
+
+        return True
+
+    def obtener_ventas(self) -> list[Venta]:
+        """Devuelve una copia de la colección de ventas."""
+
+        return self._ventas.copy()
+
+    def consultar_ventas_usuario(
+        self,
+        identificacion_usuario: str,
+    ) -> list[Venta]:
+        """
+        Devuelve las ventas asociadas a un usuario
+        utilizando recorrido y filtrado de la colección.
+        """
+
+        ventas_usuario: list[Venta] = []
+
+        for venta in self._ventas:
+            if venta.usuario_id == identificacion_usuario:
+                ventas_usuario.append(venta)
+
+        return ventas_usuario
+
     def _buscar_producto_por_codigo(
         self,
         codigo: str,
     ) -> Producto | None:
-        """
-        Realiza una búsqueda interna de productos.
-        """
+        """Realiza una búsqueda interna de productos."""
 
         for producto in self._productos:
             if producto.codigo == codigo:
@@ -216,12 +259,34 @@ class Restaurante:
         self,
         identificacion: str,
     ) -> Usuario | None:
-        """
-        Realiza una búsqueda interna de usuarios.
-        """
+        """Realiza una búsqueda interna de usuarios."""
 
         for usuario in self._usuarios:
             if usuario.identificacion == identificacion:
                 return usuario
 
         return None
+
+    def cargar_productos(
+        self,
+        productos: list[Producto],
+    ) -> None:
+        """Carga productos en la colección interna."""
+
+        self._productos = productos.copy()
+
+    def cargar_usuarios(
+        self,
+        usuarios: list[Usuario],
+    ) -> None:
+        """Carga usuarios en la colección interna."""
+
+        self._usuarios = usuarios.copy()
+
+    def cargar_ventas(
+        self,
+        ventas: list[Venta],
+    ) -> None:
+        """Carga ventas en la colección interna."""
+
+        self._ventas = ventas.copy()

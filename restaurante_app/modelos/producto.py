@@ -1,5 +1,6 @@
 """
 Este módulo contiene la clase Producto.
+
 La clase Producto representa la información general
 de un producto registrado en el restaurante.
 """
@@ -8,8 +9,9 @@ de un producto registrado en el restaurante.
 class Producto:
     """
     Representa un producto del restaurante.
-    La clase administra únicamente la información
-    correspondiente a cada producto.
+
+    La clase administra la información correspondiente
+    a cada producto y su stock disponible.
     """
 
     def __init__(
@@ -18,12 +20,14 @@ class Producto:
         nombre: str,
         categoria: str,
         precio: float,
+        stock: int,
         disponible: bool = True,
     ) -> None:
         self.codigo = codigo
         self.nombre = nombre
         self.categoria = categoria
         self.precio = precio
+        self.stock = stock
         self.disponible = disponible
 
     @property
@@ -94,6 +98,27 @@ class Producto:
         self._precio = nuevo_precio
 
     @property
+    def stock(self) -> int:
+        """Devuelve el stock disponible del producto."""
+        return self._stock
+
+    @stock.setter
+    def stock(self, nuevo_stock: int) -> None:
+        """Establece y valida el stock del producto."""
+
+        if not isinstance(nuevo_stock, int):
+            raise ValueError(
+                "El stock debe ser un número entero."
+            )
+
+        if nuevo_stock < 0:
+            raise ValueError(
+                "El stock no puede ser negativo."
+            )
+
+        self._stock = nuevo_stock
+
+    @property
     def disponible(self) -> bool:
         """Devuelve el estado de disponibilidad."""
         return self._disponible
@@ -103,10 +128,31 @@ class Producto:
         """Establece el estado de disponibilidad."""
         self._disponible = estado
 
+    def vender(self, cantidad: int) -> None:
+        """
+        Disminuye el stock del producto después de
+        una venta válida.
+        """
+
+        if cantidad <= 0:
+            raise ValueError(
+                "La cantidad debe ser mayor que cero."
+            )
+
+        if cantidad > self.stock:
+            raise ValueError(
+                "No existe stock suficiente."
+            )
+
+        self.stock -= cantidad
+
+        if self.stock == 0:
+            self.disponible = False
+
     def mostrar_informacion(self) -> str:
         """
         Devuelve una representación del producto
-        para mostrarla en la consola.
+        para mostrarlo en la consola.
         """
 
         estado = (
@@ -120,6 +166,7 @@ class Producto:
             f"Nombre: {self.nombre} | "
             f"Categoría: {self.categoria} | "
             f"Precio: ${self.precio:.2f} | "
+            f"Stock: {self.stock} | "
             f"Estado: {estado}"
         )
 
@@ -134,5 +181,6 @@ class Producto:
             "nombre": self.nombre,
             "categoria": self.categoria,
             "precio": self.precio,
+            "stock": self.stock,
             "disponible": self.disponible,
         }

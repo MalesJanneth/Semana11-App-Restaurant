@@ -1,9 +1,26 @@
 [
     {
         "codigo": "01",
-        "nombre": "Sopa",
-        "categoria": "Comida",
+        "nombre": "Encebollado",
+        "categoria": "Sopa",
         "precio": 3.5,
+        "stock": 3,
+        "disponible": true
+    },
+    {
+        "codigo": "02",
+        "nombre": "Arooz con camaron",
+        "categoria": "Segundo",
+        "precio": 5.99,
+        "stock": 3,
+        "disponible": true
+    },
+    {
+        "codigo": "03",
+        "nombre": "Churrasco",
+        "categoria": "Segundos",
+        "precio": 6.0,
+        "stock": 2,
         "disponible": true
     }
 ]

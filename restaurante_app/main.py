@@ -1,5 +1,6 @@
 """
 Programa principal del sistema Restaurante App.
+
 Este módulo coordina la interacción con el usuario
 mediante un menú de consola y utiliza los métodos
 proporcionados por Restaurante.
@@ -13,10 +14,18 @@ from servicios.archivo_servicio import ArchivoServicio
 from servicios.restaurante import Restaurante
 
 
+RUTA_DATOS = Path(__file__).resolve().parent / "datos"
+
 RUTA_PRODUCTOS = str(
-    Path(__file__).resolve().parent
-    / "datos"
-    / "productos.json"
+    RUTA_DATOS / "productos.json"
+)
+
+RUTA_USUARIOS = str(
+    RUTA_DATOS / "usuarios.json"
+)
+
+RUTA_VENTAS = str(
+    RUTA_DATOS / "ventas.json"
 )
 
 
@@ -29,21 +38,23 @@ OPCIONES_MENU: tuple[str, ...] = (
     "6. Registrar usuario",
     "7. Listar usuarios",
     "8. Mostrar categorías",
-    "9. Salir",
+    "9. Vender producto",
+    "10. Consultar ventas de un usuario",
+    "11. Salir",
 )
 
 
 def mostrar_menu() -> None:
     """Muestra el menú principal del sistema."""
 
-    print("\n" + "=" * 40)
-    print("        SISTEMA DE RESTAURANTE")
-    print("=" * 40)
+    print("\n" + "=" * 50)
+    print("          SISTEMA DE RESTAURANTE")
+    print("=" * 50)
 
     for opcion_menu in OPCIONES_MENU:
         print(opcion_menu)
 
-    print("=" * 40)
+    print("=" * 50)
 
 
 def registrar_producto(
@@ -63,11 +74,16 @@ def registrar_producto(
             input("Precio: ").strip().replace(",", ".")
         )
 
+        stock = int(
+            input("Stock: ").strip()
+        )
+
         producto = Producto(
             codigo=codigo,
             nombre=nombre,
             categoria=categoria,
             precio=precio,
+            stock=stock,
         )
 
         resultado = restaurante.registrar_producto(producto)
@@ -156,6 +172,10 @@ def actualizar_producto(
             f"Precio [{producto.precio:.2f}]: "
         ).strip()
 
+        stock_texto = input(
+            f"Stock [{producto.stock}]: "
+        ).strip()
+
         disponibilidad_texto = input(
             "¿Está disponible? (s/n): "
         ).strip().lower()
@@ -175,6 +195,11 @@ def actualizar_producto(
             )
         else:
             nuevo_precio = producto.precio
+
+        if stock_texto:
+            nuevo_stock = int(stock_texto)
+        else:
+            nuevo_stock = producto.stock
 
         if not disponibilidad_texto:
             nueva_disponibilidad = producto.disponible
@@ -198,6 +223,7 @@ def actualizar_producto(
             nuevo_nombre=nuevo_nombre,
             nueva_categoria=nueva_categoria,
             nuevo_precio=nuevo_precio,
+            nuevo_stock=nuevo_stock,
             nueva_disponibilidad=nueva_disponibilidad,
         )
 
@@ -274,6 +300,7 @@ def listar_productos(
 
 def registrar_usuario(
     restaurante: Restaurante,
+    archivo_servicio: ArchivoServicio,
 ) -> None:
     """Solicita los datos y registra un usuario."""
 
@@ -301,6 +328,11 @@ def registrar_usuario(
         resultado = restaurante.registrar_usuario(usuario)
 
         print(f"\n{resultado}")
+
+        if "correctamente" in resultado:
+            archivo_servicio.guardar_usuarios(
+                restaurante.obtener_usuarios()
+            )
 
     except ValueError as error:
         print(f"\nError: {error}")
@@ -340,6 +372,105 @@ def mostrar_categorias(
         print(f"- {categoria}")
 
 
+def vender_producto(
+    restaurante: Restaurante,
+    archivo_servicio: ArchivoServicio,
+) -> None:
+    """Solicita los datos y registra una venta."""
+
+    print("\n--- VENDER PRODUCTO ---")
+
+    try:
+        identificacion_usuario = input(
+            "Identificación del usuario: "
+        ).strip()
+
+        codigo_producto = input(
+            "Código del producto: "
+        ).strip()
+
+        cantidad = int(
+            input("Cantidad: ").strip()
+        )
+
+        resultado = restaurante.vender_producto(
+            codigo_producto=codigo_producto,
+            identificacion_usuario=identificacion_usuario,
+            cantidad=cantidad,
+        )
+
+        if not resultado:
+            print(
+                "\nVenta rechazada. Verifique que el usuario "
+                "y el producto existan, que la cantidad sea "
+                "mayor que cero y que exista stock suficiente."
+            )
+            return
+
+        archivo_servicio.guardar_ventas(
+            restaurante.obtener_ventas()
+        )
+
+        archivo_servicio.guardar_productos(
+            restaurante.obtener_productos()
+        )
+
+        print("\nVenta registrada correctamente.")
+
+    except ValueError as error:
+        print(f"\nError: {error}")
+
+
+def consultar_ventas_usuario(
+    restaurante: Restaurante,
+) -> None:
+    """Muestra las ventas realizadas por un usuario."""
+
+    print("\n--- CONSULTAR VENTAS DE UN USUARIO ---")
+
+    identificacion_usuario = input(
+        "Identificación del usuario: "
+    ).strip()
+
+    if not identificacion_usuario:
+        print(
+            "\nError: la identificación "
+            "no puede estar vacía."
+        )
+        return
+
+    ventas = restaurante.consultar_ventas_usuario(
+        identificacion_usuario
+    )
+
+    if not ventas:
+        print(
+            "\nNo existen ventas registradas "
+            "para este usuario."
+        )
+        return
+
+    print("\n=== VENTAS DEL USUARIO ===")
+
+    for venta in ventas:
+        producto = restaurante.buscar_producto(
+            venta.producto_codigo
+        )
+
+        if producto is not None:
+            print(
+                f"Producto: {producto.nombre} | "
+                f"Código: {venta.producto_codigo} | "
+                f"Cantidad: {venta.cantidad}"
+            )
+
+        else:
+            print(
+                f"Producto: {venta.producto_codigo} | "
+                f"Cantidad: {venta.cantidad}"
+            )
+
+
 def obtener_acciones_menu() -> dict[str, str]:
     """
     Devuelve un diccionario que relaciona cada opción
@@ -355,6 +486,8 @@ def obtener_acciones_menu() -> dict[str, str]:
         "6": "registrar_usuario",
         "7": "listar_usuarios",
         "8": "mostrar_categorias",
+        "9": "vender_producto",
+        "10": "consultar_ventas_usuario",
     }
 
 
@@ -390,7 +523,10 @@ def ejecutar_accion(
         listar_productos(restaurante)
 
     elif accion == "registrar_usuario":
-        registrar_usuario(restaurante)
+        registrar_usuario(
+            restaurante,
+            archivo_servicio,
+        )
 
     elif accion == "listar_usuarios":
         listar_usuarios(restaurante)
@@ -398,27 +534,56 @@ def ejecutar_accion(
     elif accion == "mostrar_categorias":
         mostrar_categorias(restaurante)
 
+    elif accion == "vender_producto":
+        vender_producto(
+            restaurante,
+            archivo_servicio,
+        )
+
+    elif accion == "consultar_ventas_usuario":
+        consultar_ventas_usuario(restaurante)
+
 
 def main() -> None:
     """
     Punto de entrada de la aplicación.
 
-    Se crean los servicios, se cargan los productos
-    almacenados y posteriormente se ejecuta el menú.
+    Se crean los servicios, se cargan productos, usuarios
+    y ventas almacenados y posteriormente se ejecuta
+    el menú.
     """
 
     restaurante = Restaurante()
 
     archivo_servicio = ArchivoServicio(
-        RUTA_PRODUCTOS
+        ruta_productos=RUTA_PRODUCTOS,
+        ruta_usuarios=RUTA_USUARIOS,
+        ruta_ventas=RUTA_VENTAS,
     )
 
     productos_cargados = (
         archivo_servicio.cargar_productos()
     )
 
-    for producto in productos_cargados:
-        restaurante.registrar_producto(producto)
+    usuarios_cargados = (
+        archivo_servicio.cargar_usuarios()
+    )
+
+    ventas_cargadas = (
+        archivo_servicio.cargar_ventas()
+    )
+
+    restaurante.cargar_productos(
+        productos_cargados
+    )
+
+    restaurante.cargar_usuarios(
+        usuarios_cargados
+    )
+
+    restaurante.cargar_ventas(
+        ventas_cargadas
+    )
 
     acciones_menu = obtener_acciones_menu()
 
@@ -429,7 +594,7 @@ def main() -> None:
             "\nSeleccione una opción: "
         ).strip()
 
-        if opcion == "9":
+        if opcion == "11":
             print(
                 "\nGracias por utilizar Restaurante App."
             )
@@ -440,7 +605,7 @@ def main() -> None:
         if accion is None:
             print(
                 "\nOpción no válida. "
-                "Seleccione una opción del 1 al 9."
+                "Seleccione una opción del 1 al 11."
             )
             continue
 

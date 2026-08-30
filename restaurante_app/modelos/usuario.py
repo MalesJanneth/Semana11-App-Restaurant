@@ -1,5 +1,6 @@
 """
 Este módulo contiene la clase Usuario.
+
 La clase Usuario representa de manera general
 a una persona registrada en el sistema.
 """
@@ -8,6 +9,7 @@ a una persona registrada en el sistema.
 class Usuario:
     """
     Representa un usuario registrado en el restaurante.
+
     La clase administra únicamente la información
     general correspondiente al usuario.
     """
@@ -47,7 +49,10 @@ class Usuario:
         return self._nombre
 
     @nombre.setter
-    def nombre(self, nuevo_nombre: str) -> None:
+    def nombre(
+        self,
+        nuevo_nombre: str,
+    ) -> None:
         """Establece y valida el nombre."""
 
         if not nuevo_nombre.strip():
@@ -60,12 +65,6 @@ class Usuario:
     @property
     def correo(self) -> str:
         """Devuelve el correo del usuario."""
-
-        if not self._correo.strip():
-            raise ValueError(
-                "El correo no puede estar vacío."
-            )
-
         return self._correo
 
     @correo.setter
@@ -95,3 +94,15 @@ class Usuario:
             f"Nombre: {self.nombre} | "
             f"Correo: {self.correo}"
         )
+
+    def a_diccionario(self) -> dict[str, str]:
+        """
+        Convierte el objeto Usuario en un diccionario
+        compatible con formato JSON.
+        """
+
+        return {
+            "identificacion": self.identificacion,
+            "nombre": self.nombre,
+            "correo": self.correo,
+        }
